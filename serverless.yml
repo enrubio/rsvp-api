@@ -1,0 +1,83 @@
+service: rsvp
+
+frameworkVersion: ">=1.1.0 <2.0.0"
+
+provider:
+  name: aws
+  runtime: nodejs8.10
+  memorySize: 128
+
+  stage: dev
+  region: us-east-1
+
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+      Resource: "*"
+
+  environment:
+    GUESTS_TABLE: "${self:service}-guests-${opt:stage, self:provider.stage}"
+    RESPONSES_TABLE: "${self:service}-responses-${opt:stage, self:provider.stage}"
+
+functions:
+  submitGuest:
+    handler: handler.submitGuest
+    description: Submits guest info
+    events:
+      - http:
+          path: guests
+          method: post
+          cors: true
+  listGuests:
+    handler: handler.listGuests
+    description: Lists all guests
+    events:
+      - http:
+          path: guests
+          method: get
+          cors: true
+  submitResponse:
+    handler: handler.submitResponse
+    description: Submits response
+    events:
+      - http:
+          path: responses/accept
+          method: post
+          cors: true
+      - http:
+          path: responses/decline
+          method: post
+          cors: true
+
+resources:
+  Resources:
+    GuestsDynamoDbTable:
+      Type: 'AWS::DynamoDB::Table'
+      Properties:
+        AttributeDefinitions:
+          -
+            AttributeName: "id"
+            AttributeType: "S"
+        KeySchema:
+          -
+            AttributeName: "id" 
+            KeyType: "HASH" 
+        BillingMode: PAY_PER_REQUEST
+        TableName: ${self:provider.environment.GUESTS_TABLE}
+    ResponsesDynamoDbTable:
+      Type: 'AWS::DynamoDB::Table'
+      Properties:
+        AttributeDefinitions:
+          -
+            AttributeName: "id"
+            AttributeType: "S"
+        KeySchema:
+          -
+            AttributeName: "id"
+            KeyType: "HASH"
+        BillingMode: PAY_PER_REQUEST
+        TableName: ${self:provider.environment.RESPONSES_TABLE}
