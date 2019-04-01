@@ -9,26 +9,22 @@ const dynamoDb = new AWS.DynamoDB.DocumentClient();
 module.exports.submitResponse = async (event) => {
   const requestBody = JSON.parse(event.body);
   const {
-    guestUuid,
-    firstName,
-    lastName,
-    attending,
+    fullName,
+    attendingCeremony,
+    attendingBanquet,
     dietaryRestrictions,
-    additionalGuests,
     guests
   } = requestBody;
 
-  if (typeof guestUuid !== 'string' ||
-    typeof firstName !== 'string' ||
-    typeof lastName !== 'string' ||
-    typeof attending !== 'boolean' ||
+  if (typeof fullName !== 'string' ||
+    typeof attendingCeremony !== 'boolean' ||
+    typeof attendingBanquet !== 'boolean' ||
     typeof dietaryRestrictions !== 'string' ||
-    typeof additionalGuests !== 'number' ||
     Array.isArray(guests) === false) {
     return buildResponse(400, 'Validation failed. Invalid input type(s)')
   }
 
-  const response = buildResponseItem(guestUuid, firstName, lastName, attending, dietaryRestrictions, additionalGuests, guests);
+  const response = buildResponseItem(fullName, attendingCeremony, attendingBanquet, dietaryRestrictions, guests);
 
   await putResponse(response);
   return buildResponse(200, response)
@@ -46,15 +42,13 @@ const putResponse = async function putResponseInDynamo(response) {
 }
 
 /* Creates response item */
-const buildResponseItem = function buildResponseItemDynamoModel(guestUuid, firstName, lastName, attending, dietaryRestrictions, additionalGuests, guests) {
+const buildResponseItem = function buildResponseItemDynamoModel(fullName, attendingCeremony, attendingBanquet, dietaryRestrictions, guests) {
   return {
     id: uuid.v1(),
-    'guestUuid': guestUuid,
-    'firstName': firstName,
-    'lastName': lastName,
-    'attending': attending,
+    'fullName': fullName,
+    'attendingCeremony': attendingCeremony,
+    'attendingBanquet': attendingBanquet,
     'dietaryRestrictions': dietaryRestrictions,
-    'additionalGuests': additionalGuests,
     'guests': guests,
   }
 }
@@ -63,7 +57,7 @@ const buildResponseItem = function buildResponseItemDynamoModel(guestUuid, first
 module.exports.listResponses = async (event) => {
   let params = {
     TableName: process.env.RESPONSES_TABLE,
-    ProjectionExpression: `id, guestUuid, firstName, lastName, attending, dietaryRestrictions, additionalGuests, guests`
+    ProjectionExpression: `id, fullName, attendingCeremony, attendingBanquet, dietaryRestrictions, guests`
   };
 
   const data = await dynamoDb.scan(params).promise();
