@@ -43,6 +43,7 @@ const putResponse = async function putResponseInDynamo(response) {
 
 /* Creates response item */
 const buildResponseItem = function buildResponseItemDynamoModel(fullName, attendingCeremony, attendingBanquet, dietaryRestrictions, guests) {
+let timestamp = new Date().toLocaleString();
   return {
     id: uuid.v1(),
     'fullName': fullName,
@@ -50,18 +51,19 @@ const buildResponseItem = function buildResponseItemDynamoModel(fullName, attend
     'attendingBanquet': attendingBanquet,
     'dietaryRestrictions': dietaryRestrictions,
     'guests': guests,
-  }
+    'timestamp': timestamp,
+  };
 }
 
 /* GET /responses */
 module.exports.listResponses = async (event) => {
   let params = {
     TableName: process.env.RESPONSES_TABLE,
-    ProjectionExpression: `id, fullName, attendingCeremony, attendingBanquet, dietaryRestrictions, guests`
+    ExpressionAttributeNames: {"#t": "timestamp"},
+    ProjectionExpression: 'id, fullName, attendingCeremony, attendingBanquet, dietaryRestrictions, guests, #t'
   };
 
   const data = await dynamoDb.scan(params).promise();
-
   return buildResponse(200, data.Items)
 }
 
