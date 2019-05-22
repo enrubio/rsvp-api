@@ -2,6 +2,8 @@
 
 This is an API for an RSVP feature I built for [this](https://github.com/janrubio/janandolivia) wedding website. 
 
+I also wrote about the process [here](https://medium.com/@emilia.rubio/how-i-built-a-serverless-rsvp-feature-with-api-gateway-lambda-and-dynamodb-652f5835ad52).
+
 ### Prerequisites
 * [node](https://nodejs.org/en/download/)
 * [npm](https://www.npmjs.com/get-npm?utm_source=house&utm_medium=homepage&utm_campaign=free%20orgs&utm_term=Install%20npm)
